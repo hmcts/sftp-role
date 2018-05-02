@@ -1,0 +1,11 @@
+#!/bin/bash
+
+{% for sftp_copy in sftp_role_copy_data %}
+cd "{{ sftp_copy.workdir }}"
+
+{% for datafile in sftp_copy.datafiles %}
+cp {{ datafile.pattern }} "{{ datafile.targetdir }}/"
+chown {{ datafile.fileowner }}: {{ datafile.targetdir }}/{{ datafile.pattern }}
+{% endfor %}
+
+{% endfor %}

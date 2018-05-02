@@ -1,0 +1,35 @@
+---
+dependency:
+  name: galaxy
+
+driver:
+  name: docker
+
+docker:
+  containers:
+    - name: sftp-role-${BRANCH_NAME}-${BUILD_NUMBER}
+      image: centos/systemd
+      image_version: latest
+      privileged: True
+      environment:
+        http_proxy: "http://proxyout.reform.hmcts.net:8080/"
+
+verifier:
+  name: testinfra
+
+ansible:
+  playbook: tests/playbook.yml
+  extra_vars:
+    sftp_groups:
+      - sftp-test-group
+    sftp_users:
+      - name: sftp-test-user
+        group: sftp-test-group
+        state: present
+        pubkey: "ssh-rsa dummy-data testuser@example.com"
+    sftp_role_copy_data:
+      - workdir: "{{ sftp_chrootdir }}/sftp/incoming/"
+        datafiles:
+        - pattern: "*.xml"
+          targetdir: "{{ sftp_chrootdir }}/sftp-test-user/incoming"
+          fileowner: "sftp-test-user"

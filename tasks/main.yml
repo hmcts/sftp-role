@@ -1,0 +1,10 @@
+---
+
+- include: install.yml
+
+- include: users.yml
+  with_items: "{{ sftp_users }}"
+  loop_control:
+    loop_var: user
+
+- include: cron.yml

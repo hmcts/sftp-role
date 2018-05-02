@@ -1,0 +1,37 @@
+AllowAgentForwarding no
+AllowGroups {{ sftp_groups | join(' ') }}
+AllowTcpForwarding no
+AuthorizedKeysFile {{ sftp_authorizedkeysdir }}/%u
+ChallengeResponseAuthentication no
+
+{% if sftp_role_sshd_ciphers is not empty %}
+Ciphers {{ sftp_role_sshd_ciphers }}
+{% endif %}
+
+ForceCommand internal-sftp
+GSSAPIAuthentication no
+GSSAPICleanupCredentials no
+HostKey /etc/ssh/ssh_host_ecdsa_key
+HostKey /etc/ssh/ssh_host_ed25519_key
+HostKey /etc/ssh/ssh_host_rsa_key
+
+{% if sftp_role_sshd_macs is not empty %}
+MACs {{ sftp_role_sshd_macs }}
+{% endif %}
+
+PasswordAuthentication no
+PermitRootLogin no
+Port {{ sftp_port }}
+PidFile /var/run/sshd-sftp.pid
+Protocol 2
+StrictModes yes
+Subsystem       sftp    internal-sftp
+SyslogFacility AUTHPRIV
+UseDNS no
+UsePAM yes
+UsePrivilegeSeparation sandbox
+X11Forwarding no
+{% for sftpgroup in sftp_groups %}
+Match group {{ sftpgroup }}
+    ChrootDirectory {{ sftp_chrootdir }}/{{ sftpgroup }}
+{% endfor %}

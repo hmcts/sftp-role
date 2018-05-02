@@ -1,0 +1,7 @@
+---
+
+- name: restart sshd-sftp
+  systemd:
+    name: sshd-sftp.service
+    state: restarted
+    daemon_reload: yes

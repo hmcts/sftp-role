@@ -1,0 +1,54 @@
+---
+
+- name: authorise ssh public key
+  become: yes
+  template:
+    src: authorized_keys.j2
+    dest: "{{ sftp_authorizedkeysdir }}/{{ user.name }}"
+    owner: root
+    group: root
+    mode: 0444
+  when: user.state == "present"
+
+- name: unauthorise ssh public key
+  become: yes
+  file:
+    path: "{{ sftp_authorizedkeysdir }}/{{ user.name }}"
+    state: "{{ user.state }}"
+  when: user.state == "absent"
+
+- name: create chroot directories
+  become: yes
+  file:
+    path: "{{ sftp_chrootdir }}/{{ item }}"
+    state: directory
+    owner: root
+    group: root
+    mode: 0755
+  with_items: "{{ sftp_groups }}"
+
+- name: create sftp group
+  become: yes
+  group:
+    name: "{{ item }}"
+    state: present
+  with_items: "{{ sftp_groups }}"
+
+- name: create incoming directories
+  become: yes
+  file:
+    path: "{{ sftp_chrootdir}}/{{ item }}/incoming"
+    state: directory
+    owner: root
+    group: "{{ item }}"
+    mode: 0775
+  with_items: "{{ sftp_groups }}"
+
+- name: create bin directory
+  become: yes
+  file:
+    path: "{{ sftp_chrootdir}}/bin"
+    state: directory
+    owner: root
+    group: root
+    mode: 0775

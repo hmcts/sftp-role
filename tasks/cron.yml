@@ -1,0 +1,21 @@
+---
+
+- name: Make sure cron is installed
+  yum:
+    name: cronie
+    state: present
+
+- name: Create script to run from cron job
+  become: yes
+  template:
+    src: sftp-copy.sh.js2
+    dest: "{{ sftp_chrootdir }}/bin/sftp-copy.sh"
+    owner: root
+    group: root
+    mode: 0755
+
+- name: Create cron job configuration
+  cron:
+    name: "Copy from incoming to sftp directory"
+    minute: "0"
+    job: "{{ sftp_chrootdir }}/bin/sftp-copy.sh"

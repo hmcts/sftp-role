@@ -1,0 +1,15 @@
+[Unit]
+Description=OpenSSH server daemon - SFTP only
+Documentation=man:sshd(8) man:sshd_config(5)
+After=syslog.target network.target auditd.service sshd.service
+
+[Service]
+EnvironmentFile=/etc/sysconfig/sshd
+ExecStart=/usr/sbin/sshd -D -f /etc/ssh/sshd-sftp_config $OPTIONS
+ExecReload=/bin/kill -HUP $MAINPID
+KillMode=process
+Restart=on-failure
+RestartSec=42s
+
+[Install]
+WantedBy=multi-user.target

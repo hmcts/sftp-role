@@ -1,0 +1,70 @@
+---
+
+- name: make sure sshd is installed
+  become: yes
+  yum:
+    name: openssh-server
+    state: present
+
+- name: add sshd config template
+  become: yes
+  template:
+    src: sshd-sftp_config.j2
+    dest: /etc/ssh/sshd-sftp_config
+    owner: root
+    group: root
+    mode: 0400
+  notify:
+    - restart sshd-sftp
+
+- name: add sftp systemd service template
+  become: yes
+  template:
+    src: sshd-sftp.service.j2
+    dest: /usr/lib/systemd/system/sshd-sftp.service
+    owner: root
+    group: root
+    mode: 0400
+  notify:
+    - restart sshd-sftp
+
+- name: add authorized keys directory
+  become: yes
+  file:
+    path: "{{ sftp_authorizedkeysdir }}"
+    state: directory
+    owner: root
+    group: root
+    mode: 0555
+
+- name: install selinux management tools
+  become: yes
+  yum:
+    pkg: policycoreutils-python
+    state: present
+
+- name: allow sftp sshd to bind to listen port
+  become: yes
+  seport:
+    ports: "{{ sftp_port }}"
+    proto: tcp
+    setype: ssh_port_t
+    state: present
+  when: ansible_selinux is defined and ansible_selinux.status is defined and ansible_selinux.status == "enabled"
+
+- name: set ssh_chroot selinux booleans
+  become: yes
+  seboolean:
+    name: "{{ item }}"
+    persistent: yes
+    state: yes
+  with_items:
+    - ssh_chroot_rw_homedirs
+  when: ansible_selinux is defined and ansible_selinux.status is defined and ansible_selinux.status == "enabled"
+
+- name: enable sshd-sftp.service
+  become: yes
+  systemd:
+    name: sshd-sftp.service
+    enabled: yes
+    state: started

@@ -1,0 +1,9 @@
+---
+sftp_authorizedkeysdir: /etc/ssh/authorized_keys_sftp
+sftp_chrootdir: /sftp
+sftp_port: 9000
+sftp_groups: []
+sftp_users: []
+sftp_role_sshd_ciphers: ""
+sftp_role_sshd_macs: ""
+sftp_role_copy_data: []
